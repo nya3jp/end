@@ -17,7 +17,7 @@ import setuptools
 
 setuptools.setup(
     name='end',
-    version='1.2.0',
+    version='1.3.0',
     author='Shuhei Takahashi',
     author_email='takahashi.shuhei@gmail.com',
     description='Introduces "end" keyword to Python.',
