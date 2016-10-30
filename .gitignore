@@ -1,0 +1,13 @@
+*~
+\#*
+.\#*
+*.o
+*.pyc
+*.orig
+*.rej
+*.swp
+.DS_Store
+
+/build/
+/dist/
+/*.egg-info/
