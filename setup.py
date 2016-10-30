@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import setuptools
-
-
-def read_file(name):
-    with open(os.path.join(os.path.dirname(__file__), name)) as f:
-        return f.read().strip()
 
 
 setuptools.setup(
@@ -27,7 +21,6 @@ setuptools.setup(
     author='Shuhei Takahashi',
     author_email='takahashi.shuhei@gmail.com',
     description='Introduces "end" keyword to Python.',
-    long_description=read_file('README.md'),
     url='https://github.com/nya3jp/end/',
     py_modules=['end'],
     test_suite='nose.collector',
