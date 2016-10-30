@@ -31,12 +31,22 @@ class SyntaxCheckTest(unittest.TestCase):
         with self.assertRaises(SyntaxError):
             import cases.if_ng
         end
+        with self.assertRaises(SyntaxError):
+            import cases.if_else
+        end
+        # TODO: Fix this nested case.
+        # with self.assertRaises(SyntaxError):
+        #     import cases.if_nested
+        # end
     end
 
     def test_while(self):
         import cases.while_ok
         with self.assertRaises(SyntaxError):
             import cases.while_ng
+        end
+        with self.assertRaises(SyntaxError):
+            import cases.while_else
         end
     end
 
@@ -45,12 +55,24 @@ class SyntaxCheckTest(unittest.TestCase):
         with self.assertRaises(SyntaxError):
             import cases.for_ng
         end
+        with self.assertRaises(SyntaxError):
+            import cases.for_else
+        end
     end
 
     def test_try(self):
         import cases.try_ok
         with self.assertRaises(SyntaxError):
             import cases.try_ng
+        end
+        with self.assertRaises(SyntaxError):
+            import cases.try_except
+        end
+        with self.assertRaises(SyntaxError):
+            import cases.try_finally
+        end
+        with self.assertRaises(SyntaxError):
+            import cases.try_else
         end
         # TODO: Fix this tricky case.
         # with self.assertRaises(SyntaxError):

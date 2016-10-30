@@ -17,6 +17,8 @@
 This is a joke module, never use it!
 """
 
+import end
+
 import ast
 import dis
 import functools
@@ -24,16 +26,19 @@ import inspect
 import sys
 import warnings
 
-PY3 = (sys.version_info.major == 3)
+PY2 = (sys.version_info.major == 2)
+PY3 = not PY2
 
-if PY3:
-    import builtins
-else:
+if PY2:
     import __builtin__ as builtins
+else:
+    import builtins
+end
 
 
 class EndSyntaxWarning(UserWarning):
     pass
+end
 
 
 def find_importer_frame():
@@ -45,7 +50,7 @@ def find_importer_frame():
     Returns:
         A frame object or None.
     """
-    byte = lambda ch: ch if PY3 else ord(ch)
+    byte = lambda ch: ord(ch) if PY2 else ch
     frame = inspect.currentframe()
     while frame:
         code = frame.f_code
@@ -58,15 +63,40 @@ def find_importer_frame():
             name = code.co_names[arg]
             if name == 'end':
                 break
+            end
+        end
         frame = frame.f_back
+    end
     return frame
+end
 
 
-def process_import():
-    """Processes an import event of "end" module."""
-    frame = find_importer_frame()
-    if not frame:
-        return
+def get_compound_bodies(node):
+    if isinstance(node, (ast.Module, ast.FunctionDef, ast.ClassDef, ast.With)):
+        return [node.body]
+    elif isinstance(node, (ast.If, ast.While, ast.For)):
+        return [node.body, node.orelse]
+    elif PY2 and isinstance(node, ast.TryFinally):
+        return [node.body, node.finalbody]
+    elif PY2 and isinstance(node, ast.TryExcept):
+        return [node.body, node.orelse] + [h.body for h in node.handlers]
+    elif PY3 and isinstance(node, ast.Try):
+        return ([node.body, node.orelse, node.finalbody]
+                + [h.body for h in node.handlers])
+    end
+    return []
+end
+
+
+def check_end_blocks(frame):
+    """Performs end-block check.
+
+    Args:
+        frame: A frame object of the module to be checked.
+
+    Raises:
+        SyntaxError: If check failed.
+    """
     try:
         module_name = frame.f_globals['__name__']
     except KeyError:
@@ -75,6 +105,8 @@ def process_import():
             'End-of-block syntax check is skipped.',
             EndSyntaxWarning)
         return
+    end
+
     filename = frame.f_globals.get('__file__', '<unknown>')
     try:
         source = inspect.getsource(sys.modules[module_name])
@@ -84,34 +116,68 @@ def process_import():
             'End-of-block syntax check is skipped.' % (module_name,),
             EndSyntaxWarning)
         return
+    end
 
     root = ast.parse(source)
     for node in ast.walk(root):
-        if not hasattr(node, 'body'):
+        bodies = get_compound_bodies(node)
+        if not bodies:
             continue
+        end
+
+        # FIXME: This is an inaccurate hack to handle if-elif-else.
+        if (isinstance(node, ast.If) and
+                len(node.orelse) == 1 and
+                isinstance(node.orelse[0], ast.If)):
+            continue
+        end
+
         # FIXME: This is an inaccurate hack to handle try-except-finally
         # statement which is parsed as ast.TryExcept in ast.TryFinally in
         # Python 2.
-        if (not PY3 and
+        if (PY2 and
                 isinstance(node, ast.TryFinally) and
                 len(node.body) == 1 and
                 isinstance(node.body[0], ast.TryExcept)):
             continue
-        for i, child in enumerate(node.body):
-            if not hasattr(child, 'body'):
-                continue
-            try:
-                next_child = node.body[i + 1]
-            except IndexError:
-                ok = False
-            else:
-                ok = (isinstance(next_child, ast.Expr) and
-                      isinstance(next_child.value, ast.Name) and
-                      next_child.value.id == 'end')
-            if not ok:
-                raise SyntaxError(
-                    '%s:%d: This block is not closed with "end"' %
-                    (filename, child.lineno))
+        end
+
+        for body in bodies:
+            for i, child in enumerate(body):
+                if not get_compound_bodies(child):
+                    continue
+                end
+                try:
+                    next_child = node.body[i + 1]
+                except IndexError:
+                    ok = False
+                else:
+                    ok = (isinstance(next_child, ast.Expr) and
+                          isinstance(next_child.value, ast.Name) and
+                          next_child.value.id == 'end')
+                end
+                if not ok:
+                    raise SyntaxError(
+                        '%s:%d: This block is not closed with "end"' %
+                        (filename, child.lineno))
+                end
+            end
+        end
+    end
+end
+
+
+def process_import():
+    """Processes an import event of "end" module.
+
+    Raises:
+        SyntaxError: If check failed.
+    """
+    frame = find_importer_frame()
+    if frame:
+        check_end_blocks(frame)
+    end
+end
 
 
 def install_import_hook():
@@ -121,11 +187,17 @@ def install_import_hook():
     def import_hook(name, *args, **kwargs):
         if name == 'end':
             process_import()
+        end
         return saved_import(name, *args, **kwargs)
+    end
     builtins.__import__ = import_hook
+end
 
 
 install_import_hook()
+
+# Check this module itself!
+check_end_blocks(inspect.currentframe())
 
 # First import of this module is not processed by the import hook, so
 # call process_import() now.
