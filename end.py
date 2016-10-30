@@ -186,8 +186,9 @@ def check_end_blocks(frame):
                     skip_next = False
                 elif is_end_node(child):
                     raise SyntaxError(
-                        '%s:%d: This "end" does not close a block.' %
-                        (filename, child.lineno))
+                        '"end" does not close a block.',
+                        [filename, child.lineno, child.col_offset,
+                         source.splitlines()[child.lineno - 1] + '\n'])
                 elif get_compound_bodies(child):
                     try:
                         ok = is_end_node(node.body[i + 1])
@@ -196,8 +197,9 @@ def check_end_blocks(frame):
                     end
                     if not ok:
                         raise SyntaxError(
-                            '%s:%d: This block is not closed with "end".' %
-                            (filename, child.lineno))
+                            'This block is not closed with "end".',
+                            [filename, child.lineno, child.col_offset,
+                             source.splitlines()[child.lineno - 1] + '\n'])
                     end
                     skip_next = True
                 end
