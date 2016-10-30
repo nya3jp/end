@@ -122,6 +122,12 @@ class SyntaxCheckTest(unittest.TestCase):
     def test_inspect_import(self):
         import cases.import_call
     end
+
+    def test_stray_end(self):
+        with self.assertRaises(SyntaxError):
+            import cases.stray_end
+        end
+    end
 end
 
 

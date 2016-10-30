@@ -76,7 +76,31 @@ def find_importer_frame():
 end
 
 
+def is_end_node(node):
+    """Checks if a node is the "end" keyword.
+
+    Args:
+        node: AST node.
+
+    Returns:
+        True if the node is the "end" keyword, otherwise False.
+    """
+    return (isinstance(node, ast.Expr) and
+            isinstance(node.value, ast.Name) and
+            node.value.id == 'end')
+end
+
+
 def get_compound_bodies(node):
+    """Returns a list of bodies of a compound statement node.
+
+    Args:
+        node: AST node.
+
+    Returns:
+        A list of bodies of the node. If the given node does not represent
+        a compound statement, an empty list is returned.
+    """
     if isinstance(node, (ast.Module, ast.FunctionDef, ast.ClassDef, ast.With)):
         return [node.body]
     elif isinstance(node, (ast.If, ast.While, ast.For)):
@@ -148,23 +172,26 @@ def check_end_blocks(frame):
         end
 
         for body in bodies:
+            skip_next = False
             for i, child in enumerate(body):
-                if not get_compound_bodies(child):
-                    continue
-                end
-                try:
-                    next_child = node.body[i + 1]
-                except IndexError:
-                    ok = False
-                else:
-                    ok = (isinstance(next_child, ast.Expr) and
-                          isinstance(next_child.value, ast.Name) and
-                          next_child.value.id == 'end')
-                end
-                if not ok:
+                if skip_next:
+                    skip_next = False
+                elif is_end_node(child):
                     raise SyntaxError(
-                        '%s:%d: This block is not closed with "end"' %
+                        '%s:%d: This "end" does not close a block.' %
                         (filename, child.lineno))
+                elif get_compound_bodies(child):
+                    try:
+                        ok = is_end_node(node.body[i + 1])
+                    except IndexError:
+                        ok = False
+                    end
+                    if not ok:
+                        raise SyntaxError(
+                            '%s:%d: This block is not closed with "end".' %
+                            (filename, child.lineno))
+                    end
+                    skip_next = True
                 end
             end
         end
