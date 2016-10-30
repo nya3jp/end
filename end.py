@@ -65,6 +65,8 @@ def find_importer_frame():
 def process_import():
     """Processes an import event of "end" module."""
     frame = find_importer_frame()
+    if not frame:
+        return
     try:
         module_name = frame.f_globals['__name__']
     except KeyError:

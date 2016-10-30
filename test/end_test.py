@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import functools
+import inspect
 import unittest
 
 import end
@@ -94,6 +95,10 @@ class SyntaxCheckTest(unittest.TestCase):
         finally:
             builtins.__import__ = saved_import
         end
+    end
+
+    def test_inspect_import(self):
+        import cases.import_call
     end
 end
 
