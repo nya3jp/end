@@ -4,6 +4,8 @@ end
 This module magically introduces `end` keyword to your Python code which marks
 the end of a block statement.
 
+[![PyPI version](https://badge.fury.io/py/end.svg)](http://badge.fury.io/py/end)
+
 
 Usage
 -----

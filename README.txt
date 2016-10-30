@@ -4,6 +4,8 @@ end
 This module magically introduces ``end`` keyword to your Python code
 which marks the end of a block statement.
 
+|PyPI version|
+
 Usage
 -----
 
@@ -66,3 +68,6 @@ License
 -------
 
 Apache 2.0
+
+.. |PyPI version| image:: https://badge.fury.io/py/end.svg
+   :target: http://badge.fury.io/py/end
