@@ -12,7 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import unittest
+
+import end
+
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
+end
 
 
 class SyntaxCheckTest(unittest.TestCase):
@@ -20,40 +29,75 @@ class SyntaxCheckTest(unittest.TestCase):
         import cases.if_ok
         with self.assertRaises(SyntaxError):
             import cases.if_ng
+        end
+    end
 
     def test_while(self):
         import cases.while_ok
         with self.assertRaises(SyntaxError):
             import cases.while_ng
+        end
+    end
 
     def test_for(self):
         import cases.for_ok
         with self.assertRaises(SyntaxError):
             import cases.for_ng
+        end
+    end
 
     def test_try(self):
         import cases.try_ok
         with self.assertRaises(SyntaxError):
             import cases.try_ng
+        end
         # TODO: Fix this tricky case.
         # with self.assertRaises(SyntaxError):
         #     import cases.try_tricky
+        # end
+    end
 
     def test_with(self):
         import cases.with_ok
         with self.assertRaises(SyntaxError):
             import cases.with_ng
+        end
+    end
 
     def test_func(self):
         import cases.func_ok
         with self.assertRaises(SyntaxError):
             import cases.func_ng
+        end
+    end
 
     def test_class(self):
         import cases.class_ok
         with self.assertRaises(SyntaxError):
             import cases.class_ng
+        end
+    end
+
+    def test_hooked_import(self):
+        # It should work even if __import__ is hooked by someone else.
+        saved_import = builtins.__import__
+        @functools.wraps(saved_import)
+        def my_import(*args, **kwargs):
+            return saved_import(*args, **kwargs)
+        end
+        builtins.__import__ = my_import
+        try:
+            with self.assertRaises(SyntaxError) as cm:
+                import cases.hooked_import
+            end
+            self.assertTrue('hooked_import.py' in str(cm.exception))
+        finally:
+            builtins.__import__ = saved_import
+        end
+    end
+end
 
 
 if __name__ == '__main__':
     unittest.main()
+end
