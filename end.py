@@ -57,22 +57,26 @@ def find_importer_frame():
     """
     byte = lambda ch: ord(ch) if PY2 else ch
     frame = inspect.currentframe()
-    while frame:
-        code = frame.f_code
-        lasti = frame.f_lasti
-        if byte(code.co_code[lasti]) == dis.opmap['IMPORT_NAME']:
-            # FIXME: Support EXTENDED_ARG.
-            arg = (
-                byte(code.co_code[lasti + 1])
-                + byte(code.co_code[lasti + 2]) * 256)
-            name = code.co_names[arg]
-            if name == 'end':
-                break
+    try:
+        while frame:
+            code = frame.f_code
+            lasti = frame.f_lasti
+            if byte(code.co_code[lasti]) == dis.opmap['IMPORT_NAME']:
+                # FIXME: Support EXTENDED_ARG.
+                arg = (
+                    byte(code.co_code[lasti + 1])
+                    + byte(code.co_code[lasti + 2]) * 256)
+                name = code.co_names[arg]
+                if name == 'end':
+                    break
+                end
             end
+            frame = frame.f_back
         end
-        frame = frame.f_back
+        return frame
+    finally:
+        del frame
     end
-    return frame
 end
 
 
@@ -127,24 +131,28 @@ def check_end_blocks(frame):
         SyntaxError: If check failed.
     """
     try:
-        module_name = frame.f_globals['__name__']
-    except KeyError:
-        warnings.warn(
-            'Can not get the source of an uknown module. '
-            'End-of-block syntax check is skipped.',
-            EndSyntaxWarning)
-        return
-    end
+        try:
+            module_name = frame.f_globals['__name__']
+        except KeyError:
+            warnings.warn(
+                'Can not get the source of an uknown module. '
+                'End-of-block syntax check is skipped.',
+                EndSyntaxWarning)
+            return
+        end
 
-    filename = frame.f_globals.get('__file__', '<unknown>')
-    try:
-        source = inspect.getsource(sys.modules[module_name])
-    except Exception:
-        warnings.warn(
-            'Can not get the source of module "%s". '
-            'End-of-block syntax check is skipped.' % (module_name,),
-            EndSyntaxWarning)
-        return
+        filename = frame.f_globals.get('__file__', '<unknown>')
+        try:
+            source = inspect.getsource(sys.modules[module_name])
+        except Exception:
+            warnings.warn(
+                'Can not get the source of module "%s". '
+                'End-of-block syntax check is skipped.' % (module_name,),
+                EndSyntaxWarning)
+            return
+        end
+    finally:
+        del frame
     end
 
     root = ast.parse(source)
@@ -207,7 +215,11 @@ def process_import():
     """
     frame = find_importer_frame()
     if frame:
-        check_end_blocks(frame)
+        try:
+            check_end_blocks(frame)
+        finally:
+            del frame
+        end
     end
 end
 
