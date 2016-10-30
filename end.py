@@ -17,7 +17,7 @@
 This is a joke module, never use it!
 """
 
-import end
+import end  # Dogfooding
 
 import ast
 import dis
@@ -25,6 +25,11 @@ import functools
 import inspect
 import sys
 import warnings
+
+if not ((sys.version_info[0] == 2 and sys.version_info[1] >= 7) or
+        (sys.version_info[0] == 3 and sys.version_info[1] >= 3)):
+    raise ImportError('Supported Python verions are 2.7+ and 3.3+.')
+end
 
 PY2 = (sys.version_info.major == 2)
 PY3 = not PY2
