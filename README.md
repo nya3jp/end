@@ -46,19 +46,6 @@ Disclaimer
 This is a joke module -- never use it.
 
 
-Known Issues
-------------
-
-This will work for most cases, but there are some edge cases.
-
-- Only CPython 2.7 is supported.
-- Single-line compound statement is not supported.
-- It will malfunction if `__import__` is hooked by someone else.
-- Source code must be available to the interpreter.
-
-Again, do not use this in a serious business anyway.
-
-
 Author
 ------
 

@@ -18,32 +18,53 @@ This is a joke module, never use it!
 """
 
 import ast
+import dis
 import functools
 import inspect
 import sys
 import warnings
 
-try:  # Python 2
-    import __builtin__ as builtins
-except ImportError:  # Python 3
+PY3 = (sys.version_info.major == 3)
+
+if PY3:
     import builtins
+else:
+    import __builtin__ as builtins
 
 
 class EndSyntaxWarning(UserWarning):
     pass
 
 
-def get_caller_frame():
-    """Returns the frame object of the caller."""
-    return inspect.currentframe().f_back.f_back
+def find_importer_frame():
+    """Returns the outer frame importing this "end" module.
 
+    If this module is being imported by other means than import statement,
+    None is returned.
 
-def process_import(frame):
-    """Processes an import event of "end" module.
-
-    Args:
-        frame: The frame object where import is performed.
+    Returns:
+        A frame object or None.
     """
+    byte = lambda ch: ch if PY3 else ord(ch)
+    frame = inspect.currentframe()
+    while frame:
+        code = frame.f_code
+        lasti = frame.f_lasti
+        if byte(code.co_code[lasti]) == dis.opmap['IMPORT_NAME']:
+            # FIXME: Support EXTENDED_ARG.
+            arg = (
+                byte(code.co_code[lasti + 1])
+                + byte(code.co_code[lasti + 2]) * 256)
+            name = code.co_names[arg]
+            if name == 'end':
+                break
+        frame = frame.f_back
+    return frame
+
+
+def process_import():
+    """Processes an import event of "end" module."""
+    frame = find_importer_frame()
     try:
         module_name = frame.f_globals['__name__']
     except KeyError:
@@ -69,7 +90,8 @@ def process_import(frame):
         # FIXME: This is an inaccurate hack to handle try-except-finally
         # statement which is parsed as ast.TryExcept in ast.TryFinally in
         # Python 2.
-        if (isinstance(node, ast.TryFinally) and
+        if (not PY3 and
+                isinstance(node, ast.TryFinally) and
                 len(node.body) == 1 and
                 isinstance(node.body[0], ast.TryExcept)):
             continue
@@ -96,7 +118,7 @@ def install_import_hook():
     @functools.wraps(saved_import)
     def import_hook(name, *args, **kwargs):
         if name == 'end':
-            process_import(get_caller_frame())
+            process_import()
         return saved_import(name, *args, **kwargs)
     builtins.__import__ = import_hook
 
@@ -105,4 +127,4 @@ install_import_hook()
 
 # First import of this module is not processed by the import hook, so
 # call process_import() now.
-process_import(get_caller_frame())
+process_import()
