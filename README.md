@@ -1,7 +1,7 @@
 end
 ===
 
-This module magically introduces `end` keyword to your Python code which marks
+This Python module magically introduces `end` keyword which marks
 the end of a block statement.
 
 [![PyPI version](https://badge.fury.io/py/end.svg)](http://badge.fury.io/py/end)
@@ -11,8 +11,8 @@ the end of a block statement.
 Usage
 -----
 
-Import "end" module and mark end of blocks with `end`. If you forget to mark them,
-`SyntaxError` is raised on import time (not on execution time).
+Import "end" module and mark ends of blocks with `end`.
+When you forget to mark any, `SyntaxError` is raised in import time (not in execution time).
 
 ```python
 import end
@@ -28,23 +28,23 @@ with open('a.txt') as f:
 end
 
 try:
-    time.sleep(10000)
+    time.sleep(3)
 except KeyboardInterrupt:
     print('Interrupted')
 finally:
-    print('Bye!')
+    print('Slept')
 end
 
 if 28 > 3:
     print('nya-n')
-# end is missing here, SyntaxError is raised!
+# end is missing here. SyntaxError is raised!
 ```
 
 
-Disclaimer
-----------
+Warning
+-------
 
-This is a joke module -- never use it.
+This is a joke module --- never use it.
 
 
 Author

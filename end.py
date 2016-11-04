@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Introduces "end" keyword to mark the end of a block.
+"""Introduces "end" keyword to Python.
 
-This is a joke module, never use it!
+This Python module magically introduces `end` keyword which marks the end of
+a block statement.
+
+This is a joke module --- never use it.
 """
 
 import end  # Dogfooding
