@@ -191,7 +191,7 @@ def check_end_blocks(frame):
                          source.splitlines()[child.lineno - 1] + '\n'])
                 elif get_compound_bodies(child):
                     try:
-                        ok = is_end_node(node.body[i + 1])
+                        ok = is_end_node(body[i + 1])
                     except IndexError:
                         ok = False
                     end

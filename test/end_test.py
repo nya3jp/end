@@ -128,6 +128,10 @@ class SyntaxCheckTest(unittest.TestCase):
             import cases.stray_end
         end
     end
+
+    def test_regression_multi_bodies(self):
+        import cases.multi_bodies
+    end
 end
 
 
