@@ -29,6 +29,9 @@ import inspect
 import sys
 import warnings
 
+# Never use non-standard modules (e.g. six) so that they can
+# depend on us! :)
+
 if not ((sys.version_info[0] == 2 and sys.version_info[1] >= 7) or
         (sys.version_info[0] == 3 and sys.version_info[1] >= 3)):
     raise ImportError('Supported Python verions are 2.7+ and 3.3+.')
